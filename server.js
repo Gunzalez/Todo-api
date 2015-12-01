@@ -1,6 +1,8 @@
 var express = require('express');
 var app = express();
 var PORT = process.env.PORT || 3000;
+
+// list of todos
 var todos = [{
 	id: 1,
 	description: "Learn Node.js",
@@ -15,14 +17,17 @@ var todos = [{
 	completed: true
 }]
 
+// just checking the roo works
 app.get('/', function(req, res){
 	res.send('TODO App ROOT')
 });
 
+// api - gets all todos aka collection
 app.get('/todos', function(req, res){	
 	res.json(todos);
 });
 
+// api - gets one todo item aka model
 app.get('/todos/:id', function(req, res){
 	var todoId = req.params.id;
 	var matchedTodo = false;
@@ -38,6 +43,7 @@ app.get('/todos/:id', function(req, res){
 	}
 });
 
+// listening port
 app.listen(PORT, function () {
 	console.log('Express server started on port: '+PORT);
 })
