@@ -4,7 +4,7 @@ var app = express();
 var PORT = process.env.PORT || 3000;
 var todoNextId = 1;
 var todos = [];
-
+var _ = require('underscore');
 
 app.use(bodyParser.json());
 
@@ -25,12 +25,19 @@ app.use(bodyParser.json());
 
 app.post('/todos', function(req, res){
 
-	var todo = req.body;
-	todo.id = todoNextId;
-	todos.push(todo);
-	todoNextId++;
+	var body = req.body;
+	var todo = _.pick(body, 'description', 'completed');
+	todo.description = todo.description.trim();
 
-	res.json(todos)
+	if(!_.isBoolean(todo.completed) || !_.isString(todo.description) || todo.description.trim().length === 0){
+		res.status(400).send();
+	} else {
+		todo.id = todoNextId;
+		todos.push(todo);
+		todoNextId++;
+
+		res.json(todos);
+	}
 });
 
 
@@ -46,13 +53,10 @@ app.get('/todos', function(req, res){
 
 // api - gets one todo item aka model
 app.get('/todos/:id', function(req, res){
-	var todoId = req.params.id;
-	var matchedTodo = false;
-	todos.forEach(function (todo) {
-		if (todo.id === parseInt(todoId, 10)){
-			matchedTodo = todo;
-		}
-	});
+
+	var todoId = parseInt(req.params.id);
+	var matchedTodo = _.findWhere(todos, {id: todoId});
+
 	if(!matchedTodo){
 		res.status(404).send();
 	} else {
