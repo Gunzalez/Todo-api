@@ -1,23 +1,40 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var app = express();
 var PORT = process.env.PORT || 3000;
+var todoNextId = 1;
+var todos = [];
+
+
+app.use(bodyParser.json());
 
 // list of todos
-var todos = [{
-	id: 1,
-	description: "Learn Node.js",
-	completed: false
-}, {
-	id: 2,
-	description: "Scratch ass",
-	completed: false
-}, {
-	id: 3,
-	description: "Watch new movie",
-	completed: true
-}]
+// var todos = [{
+// 	id: 1,
+// 	description: "Learn Node.js",
+// 	completed: false
+// }, {
+// 	id: 2,
+// 	description: "Scratch ass",
+// 	completed: false
+// }, {
+// 	id: 3,
+// 	description: "Watch new movie",
+// 	completed: true
+// }]
 
-// just checking the roo works
+app.post('/todos', function(req, res){
+
+	var todo = req.body;
+	todo.id = todoNextId;
+	todos.push(todo);
+	todoNextId++;
+
+	res.json(todos)
+});
+
+
+// just checking the root works
 app.get('/', function(req, res){
 	res.send('TODO App ROOT')
 });
