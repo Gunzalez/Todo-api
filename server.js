@@ -64,6 +64,22 @@ app.get('/todos/:id', function(req, res){
 	}
 });
 
+// api - gets one todo item aka model
+app.delete('/todos/:id', function(req, res){
+
+	var todoId = parseInt(req.params.id);
+	var matchedTodo = _.findWhere(todos, {id: todoId});
+
+	if(!matchedTodo){
+		res.status(404).json({"error":"No Todo found with id: " + todoId});
+	} else {
+		todos = _.without(todos, matchedTodo);
+		res.json(matchedTodo);
+	}
+	
+});
+
+
 // listening port
 app.listen(PORT, function () {
 	console.log('Express server started on port: '+PORT);
