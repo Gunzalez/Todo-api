@@ -41,6 +41,51 @@ app.post('/todos', function(req, res){
 });
 
 
+// api - gets one todo item aka model
+app.delete('/todos/:id', function(req, res){
+
+	var todoId = parseInt(req.params.id);
+	var matchedTodo = _.findWhere(todos, {id: todoId});
+
+	if(!matchedTodo){
+		res.status(404).json({"error":"No Todo found with id: " + todoId});
+	} else {
+		todos = _.without(todos, matchedTodo);
+		res.json(matchedTodo);
+	}
+	
+});
+
+// api - updates one todo item, model
+app.put('/todos/:id', function(req, res){
+
+	var body = req.body;
+	var todo = _.pick(body, 'description', 'completed');
+	var validAttributes = {}
+	var todoId = parseInt(req.params.id);
+	var matchedTodo = _.findWhere(todos, {id: todoId});
+
+	if(!matchedTodo){
+		return res.status(404).send();
+	}
+
+	if(todo.hasOwnProperty('completed') && _.isBoolean(todo.completed)){
+		validAttributes.completed = todo.completed;
+	} else if (todo.hasOwnProperty('completed')) {
+		return res.status(400).send();
+	}
+
+	if(todo.hasOwnProperty('description') && _.isString(todo.description) && todo.description.trim().length > 0){
+		validAttributes.description = todo.description
+	} else if(todo.hasOwnProperty('description')){
+		return res.status(400).send();
+	}
+
+	_.extend(matchedTodo, validAttributes);
+	res.json(matchedTodo);	
+
+});
+
 // just checking the root works
 app.get('/', function(req, res){
 	res.send('TODO App ROOT')
@@ -62,21 +107,6 @@ app.get('/todos/:id', function(req, res){
 	} else {
 		res.json(matchedTodo);
 	}
-});
-
-// api - gets one todo item aka model
-app.delete('/todos/:id', function(req, res){
-
-	var todoId = parseInt(req.params.id);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
-
-	if(!matchedTodo){
-		res.status(404).json({"error":"No Todo found with id: " + todoId});
-	} else {
-		todos = _.without(todos, matchedTodo);
-		res.json(matchedTodo);
-	}
-	
 });
 
 
