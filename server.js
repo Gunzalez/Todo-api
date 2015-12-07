@@ -92,8 +92,21 @@ app.get('/', function(req, res){
 });
 
 // api - gets all todos aka collection
-app.get('/todos', function(req, res){	
-	res.json(todos);
+app.get('/todos', function(req, res){
+
+    var queryParams = req.query,
+        filteredTodos = todos;
+
+    if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
+        queryParams.completed = true;
+        filteredTodos = _.where(filteredTodos, { "completed": true });
+    } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
+        queryParams.completed = false;
+        filteredTodos = _.where(filteredTodos, { "completed": false });
+    }
+
+    res.json(filteredTodos);
+
 });
 
 // api - gets one todo item aka model
