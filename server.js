@@ -61,7 +61,7 @@ app.put('/todos/:id', function(req, res){
 
 	var body = req.body;
 	var todo = _.pick(body, 'description', 'completed');
-	var validAttributes = {}
+	var validAttributes = {};
 	var todoId = parseInt(req.params.id);
 	var matchedTodo = _.findWhere(todos, {id: todoId});
 
@@ -98,11 +98,15 @@ app.get('/todos', function(req, res){
         filteredTodos = todos;
 
     if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
-        queryParams.completed = true;
         filteredTodos = _.where(filteredTodos, { "completed": true });
     } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
-        queryParams.completed = false;
         filteredTodos = _.where(filteredTodos, { "completed": false });
+    }
+
+    if (queryParams.hasOwnProperty('q') && _.isString(queryParams.q) && queryParams.q.trim().length > 0){
+        filteredTodos = _.filter(filteredTodos, function(todo){
+            return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+        });
     }
 
     res.json(filteredTodos);
