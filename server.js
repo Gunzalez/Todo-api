@@ -9,19 +9,19 @@ var _ = require('underscore');
 app.use(bodyParser.json());
 
 // list of todos
-// var todos = [{
-// 	id: 1,
-// 	description: "Learn Node.js",
-// 	completed: false
-// }, {
-// 	id: 2,
-// 	description: "Scratch ass",
-// 	completed: false
-// }, {
-// 	id: 3,
-// 	description: "Watch new movie",
-// 	completed: true
-// }]
+//var todos = [{
+//	id: 1,
+//	description: "Learn Node.js",
+//	completed: false
+//}, {
+//	id: 2,
+//	description: "Scratch ass",
+//	completed: false
+//}, {
+//	id: 3,
+//	description: "Watch new movie",
+//	completed: true
+//}]
 
 app.post('/todos', function(req, res){
 
@@ -32,7 +32,7 @@ app.post('/todos', function(req, res){
 	if(!_.isBoolean(todo.completed) || !_.isString(todo.description) || todo.description.trim().length === 0){
 		res.status(400).send();
 	} else {
-		todo.id = todoNextId;
+		todo.id = todoNextId; //
 		todos.push(todo);
 		todoNextId++;
 
@@ -66,7 +66,7 @@ app.put('/todos/:id', function(req, res){
 	var matchedTodo = _.findWhere(todos, {id: todoId});
 
 	if(!matchedTodo){
-		return res.status(404).send();
+		return res.status(404).json({"error":"No Todo found with id: " + todoId});
 	}
 
 	if(todo.hasOwnProperty('completed') && _.isBoolean(todo.completed)){
