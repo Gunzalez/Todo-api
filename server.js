@@ -25,17 +25,31 @@ app.use(bodyParser.json());
 //}]
 
 
-
 app.post('/todos', function(req, res){
 
 	var body = _.pick(req.body, 'description', 'completed');
 
     db.todo.create(body).then(function(todo){
-        console.log('All went well');
         res.json(todo.toJSON());
     }).catch(function(error){
         console.log(error);
     });
+});
+
+// api - gets one todo item aka model
+app.get('/todos/:id', function(req, res){
+
+    var todoId = parseInt(req.params.id);
+    db.todo.findById(todoId).then(function(todo){
+        if(!!todo){
+            res.json(todo);
+        } else {
+            res.status(404).json({"error":"No Todo found with id: " + todoId});
+        }
+    }).catch(function(error){
+        res.status(500).json(error);
+    });
+
 });
 
 
@@ -83,12 +97,6 @@ app.put('/todos/:id', function(req, res){
  	res.json(matchedTodo);
 
 });
-
-// just checking the root works
-app.get('/', function(req, res){
-	res.send('TODO App ROOT')
-});
-
 // api - gets all todos aka collection
 app.get('/todos', function(req, res){
 
@@ -111,17 +119,9 @@ app.get('/todos', function(req, res){
 
 });
 
-// api - gets one todo item aka model
-app.get('/todos/:id', function(req, res){
-
-	var todoId = parseInt(req.params.id);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
-
-	if(!matchedTodo){
-		res.status(404).send();
-	} else {
-		res.json(matchedTodo);
-	}
+// just checking the root works
+app.get('/', function(req, res){
+    res.send('TODO App ROOT')
 });
 
 db.sequelize.sync().then(function(){
