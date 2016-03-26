@@ -24,7 +24,7 @@ app.use(bodyParser.json());
 //	completed: true
 //}]
 
-
+// add a todo
 app.post('/todos', function(req, res){
 
 	var body = _.pick(req.body, 'description', 'completed');
@@ -36,7 +36,8 @@ app.post('/todos', function(req, res){
     });
 });
 
-// api - gets one todo item aka model
+
+// gets a todo
 app.get('/todos/:id', function(req, res){
 
     var todoId = parseInt(req.params.id);
@@ -53,7 +54,7 @@ app.get('/todos/:id', function(req, res){
 });
 
 
-// api - gets one todo item aka model
+// get all todos, search todos
 app.delete('/todos/:id', function(req, res){
 
 	var todoId = parseInt(req.params.id);
@@ -67,6 +68,8 @@ app.delete('/todos/:id', function(req, res){
 	}
 	
 });
+
+// ============================================================
 
 // api - updates one todo item, model
 app.put('/todos/:id', function(req, res){
@@ -97,27 +100,34 @@ app.put('/todos/:id', function(req, res){
  	res.json(matchedTodo);
 
 });
+
 // api - gets all todos aka collection
 app.get('/todos', function(req, res){
 
-    var queryParams = req.query,
-        filteredTodos = todos;
+    var query = req.query,
+        criteria = {};
 
-    if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
-        filteredTodos = _.where(filteredTodos, { "completed": true });
-    } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
-        filteredTodos = _.where(filteredTodos, { "completed": false });
+    if (query.hasOwnProperty('completed') && query.completed === 'true'){
+        criteria.completed = true;
+    } else if (query.hasOwnProperty('completed') && query.completed === 'false'){
+        criteria.completed = false;
     }
 
-    if (queryParams.hasOwnProperty('q') && _.isString(queryParams.q) && queryParams.q.trim().length > 0){
-        filteredTodos = _.filter(filteredTodos, function(todo){
-            return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-        });
+    if (query.hasOwnProperty('q') && _.isString(query.q) && query.q.trim().length > 0){
+        criteria.description = {
+            $like: '%'+query.q+'%'
+        }
     }
 
-    res.json(filteredTodos);
+    db.todo.findAll({ where: criteria }).then(function(todos){
+        res.json(todos);
+    }).catch(function (error) {
+        res.status(500).json(error);
+    });
 
 });
+
+// ============================================================
 
 // just checking the root works
 app.get('/', function(req, res){
@@ -128,6 +138,5 @@ db.sequelize.sync().then(function(){
     // listening port
     app.listen(PORT, function () {
         console.log('Express server started on port: '+PORT);
-    })
+    });
 });
-
