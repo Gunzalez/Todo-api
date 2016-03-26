@@ -55,17 +55,46 @@ app.get('/todos/:id', function(req, res){
 
 
 // get all todos, search todos
+app.get('/todos', function(req, res){
+
+    var query = req.query,
+            criteria = {};
+
+    if (query.hasOwnProperty('completed') && query.completed === 'true'){
+        criteria.completed = true;
+    } else if (query.hasOwnProperty('completed') && query.completed === 'false'){
+        criteria.completed = false;
+    }
+
+    if (query.hasOwnProperty('q') && _.isString(query.q) && query.q.trim().length > 0){
+        criteria.description = {
+            $like: '%'+query.q+'%'
+        }
+    }
+
+    db.todo.findAll({ where: criteria }).then(function(todos){
+        res.json(todos);
+    }).catch(function (error) {
+        res.status(500).json(error);
+    });
+
+});
+
+
+// delete a todo item
 app.delete('/todos/:id', function(req, res){
 
 	var todoId = parseInt(req.params.id);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
-
-	if(!matchedTodo){
-		res.status(404).json({"error":"No Todo found with id: " + todoId});
-	} else {
-		todos = _.without(todos, matchedTodo);
-		res.json(matchedTodo);
-	}
+    db.todo.destroy({ where : { id: todoId }}).then(function(deletedItems) {
+        if(deletedItems > 0){
+            //res.json({Massage: deletedItems + ' record(s) was deleted'});
+            res.send(204);
+        } else {
+            res.status(400).json({error:'No todo with id of ' + todoId});
+        }
+    }).catch(function(error){
+        res.status(500).json(error);
+    });
 	
 });
 
@@ -98,32 +127,6 @@ app.put('/todos/:id', function(req, res){
 
 	_.extend(matchedTodo, validAttributes);
  	res.json(matchedTodo);
-
-});
-
-// api - gets all todos aka collection
-app.get('/todos', function(req, res){
-
-    var query = req.query,
-        criteria = {};
-
-    if (query.hasOwnProperty('completed') && query.completed === 'true'){
-        criteria.completed = true;
-    } else if (query.hasOwnProperty('completed') && query.completed === 'false'){
-        criteria.completed = false;
-    }
-
-    if (query.hasOwnProperty('q') && _.isString(query.q) && query.q.trim().length > 0){
-        criteria.description = {
-            $like: '%'+query.q+'%'
-        }
-    }
-
-    db.todo.findAll({ where: criteria }).then(function(todos){
-        res.json(todos);
-    }).catch(function (error) {
-        res.status(500).json(error);
-    });
 
 });
 
