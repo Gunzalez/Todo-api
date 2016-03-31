@@ -2,8 +2,6 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var PORT = process.env.PORT || 3000;
-var todoNextId = 1;
-var todos = [];
 var _ = require('underscore');
 var db = require('./db.js');
 
@@ -110,6 +108,23 @@ app.put('/todos/:id', function(req, res){
         res.status(500).send();
     });
 });
+
+
+// ============ users ============================
+
+// add a todo
+app.post('/users', function(req, res){
+
+    var body = _.pick(req.body, 'email', 'password');
+
+    db.user.create(body).then(function(user){
+        res.json(user.toJSON());
+    }).catch(function(error){
+        console.log(error);
+        res.status(400).json(error);
+    });
+});
+
 
 // just checking the root works
 app.get('/', function(req, res){
