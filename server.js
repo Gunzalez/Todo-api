@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var app = express();
 var PORT = process.env.PORT || 3000;
 var _ = require('underscore');
+var bcrypt = require('bcryptjs');
 var db = require('./db.js');
 
 app.use(bodyParser.json());
@@ -15,7 +16,7 @@ app.post('/todos', function(req, res){
     db.todo.create(body).then(function(todo){
         res.json(todo.toJSON());
     }).catch(function(error){
-        console.log(error);
+        res.status(500).json(error);
     });
 });
 
@@ -112,7 +113,7 @@ app.put('/todos/:id', function(req, res){
 
 // ============ users ============================
 
-// add a todo
+// add a new user
 app.post('/users', function(req, res){
 
     var body = _.pick(req.body, 'email', 'password');
@@ -120,18 +121,28 @@ app.post('/users', function(req, res){
     db.user.create(body).then(function(user){
         res.json(user.toPublicJSON());
     }).catch(function(error){
-        console.log(error);
         res.status(400).json(error);
     });
 });
 
+// add a new user
+app.post('/users/login', function(req, res){
+
+    var body = _.pick(req.body, 'email', 'password');
+
+    db.user.authenticate(body).then(function(user){
+        res.json(user.toPublicJSON());
+    }, function(){
+       res.status(401).send();
+    });
+});
 
 // just checking the root works
 app.get('/', function(req, res){
     res.send('TODO App ROOT')
 });
 
-db.sequelize.sync().then(function(){
+db.sequelize.sync({ force: true}).then(function(){
     // listening port
     app.listen(PORT, function () {
         console.log('Express server started on port: '+PORT);
